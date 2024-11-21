@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useState, useCallback } from "react";
+import { useDispatch } from "react-redux";
 
 export function useThunk(thunk) {
   const [isLoading, setIsLoading] = useState(false);
@@ -8,18 +8,23 @@ export function useThunk(thunk) {
   const dispatch = useDispatch();
 
   const runThunk = useCallback(
-    (arg, successMsg = 'Request was successful') => {
+    (arg, successMsg = "Request was successful") => {
       console.log(arg);
       setIsLoading(true);
       setSuccessMessage(null);
       setError(null);
       dispatch(thunk(arg))
         .unwrap()
-        .then(() => setSuccessMessage(successMsg))
-        .catch((err) => setError(err))
+        .then((result) => {
+          console.log("Thunk resolved with result:", result); // Debug resolved value
+          setSuccessMessage(result?.message || successMsg); // Update successMessage here
+        })
+        .catch((err) => {
+          setError(err);
+        })
         .finally(() => setIsLoading(false));
     },
-    [dispatch, thunk],
+    [dispatch, thunk]
   );
 
   return [runThunk, isLoading, error, successMessage];
