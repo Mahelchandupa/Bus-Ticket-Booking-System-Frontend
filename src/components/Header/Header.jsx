@@ -4,11 +4,22 @@ import { FaUserCog } from "react-icons/fa";
 import { IoMdSettings } from "react-icons/io";
 import { IoLogOut } from "react-icons/io5";
 import UserProfileAvatar from "../../assets/user-profile-avatar.jpg";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { userLogout } from "../../store";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { currentUser } = useSelector((state) => state.user);
   const [dropDown, setDropDown] = useState(false);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(userLogout());
+    navigate("/login");
+  }
+
 
   return (
     <div className=" w-full fixed top-0 h-[70px] z-50 flex items-center justify-between px-6 shadow-md bg-white rounded-bl-lg rounded-br-lg font-sans ">
@@ -40,7 +51,7 @@ const Header = () => {
                   <IoMdSettings className=" text-red-500 text-lg" />
                   Settings
                 </li>
-                <li className="flex items-center gap-4 hover:bg-gray-100 p-2 border-b-gray-200 border-b-[1px] hover:rounded-md cursor-pointer">
+                <li onClick={handleLogout} className="flex items-center gap-4 hover:bg-gray-100 p-2 border-b-gray-200 border-b-[1px] hover:rounded-md cursor-pointer">
                   <IoLogOut className=" text-red-500 text-lg" />
                   Sign Out
                 </li>

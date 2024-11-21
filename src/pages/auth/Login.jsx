@@ -16,6 +16,8 @@ const Login = () => {
   const [doSignIn, isSignInLoading, signInError, signInSuccessMsg] =
     useThunk(signIn);
 
+  const [loginSuccess, setLoginSuccess] = useState(false);
+
   const {
     value: email,
     handleInputChange: handleEmailChange,
@@ -53,10 +55,10 @@ const Login = () => {
       showToast("success", signInSuccessMsg);
 
       setTimeout(() => {
-        navigate("/");
-      }, 3000);
+        navigate("/dashboard");
+      }, 2000);
     }
-  }, [signInSuccessMsg, signInError, navigate]);
+  }, [signInSuccessMsg, signInError, loginSuccess, navigate]);
 
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -151,12 +153,13 @@ const Login = () => {
 
         <p className="mt-10 text-center text-sm text-gray-400">
           Don't have an account?{" "}
-          <Link
-            to="/signup"
+          <button
+            // to="/register"
+            onClick={() => navigate("/register")}
             className="font-semibold leading-6 text-red-500 hover:text-red-400"
           >
             Sign up
-          </Link>
+          </button>
         </p>
       </div>
       <ToastContainer autoClose={2000} />

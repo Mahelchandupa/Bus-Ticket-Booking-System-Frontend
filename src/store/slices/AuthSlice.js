@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { signIn } from "../thunks/AuthThunk";
+import { signIn, signUp, userLogout } from "../thunks/AuthThunk";
 
 const userSlice = createSlice({
   name: "user",
@@ -10,9 +10,17 @@ const userSlice = createSlice({
     builder
       // Sign In
       .addCase(signIn.fulfilled, (state, action) => {
-        console.log('cation', action.payload)
         state.currentUser = action.payload.userInfo;
         localStorage.setItem("token", action.payload.token);
+      })
+      // Sign Up
+      .addCase(signUp.fulfilled, (state, action) => {
+        console.log("action", action.payload);
+      })
+      // User Logout
+      .addCase(userLogout, (state) => {
+        state.currentUser = {};
+        localStorage.removeItem("token");
       });
   },
 });
