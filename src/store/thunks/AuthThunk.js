@@ -41,3 +41,6 @@ export const signUp = createAsyncThunk(
     }
   }
 );
+
+// User Logout
+export const userLogout = createAction("user/logout");

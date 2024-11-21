@@ -13,7 +13,7 @@ const router = createBrowserRouter([
     element: <Root />,
     children: [
       {
-        path: "/",
+        path: "/dashboard",
         element: (
           <ProtectedRoute isAuthenticated={isAuthenticated()}>
             <Home />

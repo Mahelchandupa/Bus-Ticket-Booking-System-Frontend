@@ -34,7 +34,7 @@ bus_ticket_booking_api.interceptors.response.use(
       error.response?.data?.message === "Token expired"
     ) {
       showToast("error", "Token expired. Please log in again.");
-      localStorage.clear();
+      localStorage.removeItem("token");
       history.push("/login");
     }
     return Promise.reject(error);

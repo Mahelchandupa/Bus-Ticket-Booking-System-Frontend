@@ -5,7 +5,7 @@ import history from "./helpers/history";
 function App() {
   return (
     <div>
-      <RouterProvider router={router} history={history} />
+      <RouterProvider router={router} />
     </div>
   );
 }
