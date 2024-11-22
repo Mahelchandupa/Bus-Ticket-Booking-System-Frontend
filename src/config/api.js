@@ -26,19 +26,4 @@ bus_ticket_booking_api.interceptors.request.use(
   }
 );
 
-bus_ticket_booking_api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (
-      error.response?.status === 401 &&
-      error.response?.data?.message === "Token expired"
-    ) {
-      showToast("error", "Token expired. Please log in again.");
-      localStorage.removeItem("token");
-      history.push("/login");
-    }
-    return Promise.reject(error);
-  }
-);
-
 export default bus_ticket_booking_api;

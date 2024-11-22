@@ -23,9 +23,9 @@ const Header = () => {
 
   return (
     <div className=" w-full fixed top-0 h-[70px] z-50 flex items-center justify-between px-6 shadow-md bg-white rounded-bl-lg rounded-br-lg font-sans ">
-      <div className=" flex items-center gap-2">
+      <div onClick={() => navigate('/')} className=" cursor-pointer flex items-center gap-2">
         <h1 className=" max-[400px]:text-xl text-4xl font-bold text-gray-700 font-mono">
-          SLTS
+          SLTB
         </h1>
         <GiHummingbird className="max-[400px]:text-lg  text-4xl text-red-600" />
       </div>
