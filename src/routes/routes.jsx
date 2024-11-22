@@ -4,8 +4,7 @@ import Home from "../pages/Home";
 import Login from "../pages/auth/Login";
 import ProtectedRoute from "../helpers/ProtectedRoute";
 import Register from "../pages/auth/Register";
-
-const isAuthenticated = () => !!localStorage.getItem("token");
+import SearchResult from "../pages/SearchResult";
 
 const router = createBrowserRouter([
   {
@@ -13,13 +12,21 @@ const router = createBrowserRouter([
     element: <Root />,
     children: [
       {
-        path: "/dashboard",
+        path: "/",
         element: (
-          <ProtectedRoute isAuthenticated={isAuthenticated()}>
+          <ProtectedRoute>
             <Home />
           </ProtectedRoute>
         ),
       },
+      {
+        path: "/search",
+        element: (
+          <ProtectedRoute>
+            <SearchResult />
+          </ProtectedRoute>
+        ),
+      }
     ],
   },
   {

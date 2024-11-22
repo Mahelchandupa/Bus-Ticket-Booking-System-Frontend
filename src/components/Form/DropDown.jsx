@@ -26,7 +26,7 @@ function DropDown({
       <label htmlFor={id} className={`block form-label ${labelStyle}`}>
         {label}
       </label>
-      <div className={`relative mt-2 `}>
+      <div className={`relative mt-2 max-h-80 overflow-y-auto`}>
         <select
           id={id}
           name={name}
