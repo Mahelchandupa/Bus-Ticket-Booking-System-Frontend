@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { fetchSchedulesByParams } from "../services/apiService";
 import showToast from "../utils/toastNotifications";
 import busImg from "../assets/bus-img.jpg";
+import { userLogout } from "../store";
+import { useDispatch } from "react-redux";
 
 const SearchResult = () => {
   const location = useLocation();
@@ -14,6 +16,7 @@ const SearchResult = () => {
   const [schedules, setSchedules] = useState([]);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchSearchResult = async () => {
@@ -28,6 +31,7 @@ const SearchResult = () => {
         ) {
           showToast("error", "Token expired. Please log in again.");
           localStorage.removeItem("token");
+          dispatch(userLogout());
           setTimeout(() => {
             window.location.href = "/login";
           }, 3000);

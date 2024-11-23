@@ -4,11 +4,19 @@ import showToast from "../utils/toastNotifications";
 import { fetchScheduleById } from "../services/apiService";
 import busImg from "../assets/bus-img.jpg";
 import ArrowImg from "../assets/arrow.png";
+import { useDispatch, useSelector } from "react-redux";
+import { userLogout } from "../store";
+import io from "socket.io-client";
+
 
 const Booking = () => {
+  const socket = io("http://localhost:5000");
   const { scheduleId } = useParams();
-
   const [schedule, setSchedule] = useState({});
+  const dispatch = useDispatch();
+  const [seatStatus, setSeatStatus] = useState([]);
+
+  const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     const fetchSchedule = async () => {
@@ -16,6 +24,7 @@ const Booking = () => {
         const response = await fetchScheduleById(scheduleId);
         console.log("response", response);
         setSchedule(response.data);
+        setSeatStatus(response.data.seatStatus);
       } catch (error) {
         const { error: response } = error;
         if (
@@ -24,6 +33,7 @@ const Booking = () => {
         ) {
           showToast("error", "Token expired. Please log in again.");
           localStorage.removeItem("token");
+          dispatch(userLogout());
           setTimeout(() => {
             window.location.href = "/login";
           }, 3000);
@@ -49,16 +59,66 @@ const Booking = () => {
     ? `${year}-${month}-${day}`
     : "No date available";
 
-  console.log(schedule.seatStatus);
-
   const handleSeatClick = (seat) => {
-    console.log(`Seat ${seat.seatNumber} clicked!`);
-    // Add your booking logic here
+    if (seat.seatAvailableState !== "Available") {
+      alert("This seat is not available.");
+      return;
+    }
+
+    // Notify backend to set seat state to Processing
+    socket.emit("seatProcessing", {
+      scheduleId,
+      seatNumber: seat.seatNumber,
+      userId: currentUser._id,
+    });
+
+    alert(
+      `Seat ${seat.seatNumber} is reserved for you. Complete the payment in 10 minutes.`
+    );
   };
+
+  useEffect(() => {
+    // Listen for seat status updates
+    socket.on("seatStatusUpdate", (update) => {
+      console.log("update", update);
+      if (update.scheduleId === scheduleId) {
+        setSeatStatus((prevStatus) =>
+          prevStatus.map((seat) =>
+            seat.seatNumber === update.seatNumber
+              ? { ...seat, seatAvailableState: update.state }
+              : seat
+          )
+        );
+      }
+    });
+
+    return () => socket.disconnect();
+  }, [scheduleId]);
+
+  useEffect(() => {
+    // Listen for seat reset from backend
+    socket.on("seatReset", (update) => {
+      if (update.scheduleId === scheduleId) {
+        setSeatStatus((prevStatus) =>
+          prevStatus.map((seat) =>
+            seat.seatNumber === update.seatNumber
+              ? { ...seat, seatAvailableState: "Available" }
+              : seat
+          )
+        );
+      }
+    });
+
+    return () => {
+      socket.off("seatReset");
+    };
+  }, [scheduleId]);
+
+  console.log("seatStatus", seatStatus);
 
   return (
     <div className=" mt-[100px] mb-[100px]">
-      <div className=" max-w-5xl mx-auto">
+      <div className=" max-w-6xl mx-auto">
         <div className=" w-full min-h-[200px] rounded-md overflow-hidden shadow-md">
           <div className=" font-poppins flex items-center justify-between bg-blue-500 px-4 py-2">
             <h1 className="text-lg font-bold text-white">
@@ -161,27 +221,41 @@ const Booking = () => {
       </div>
       <div className=" flex mt-5 justify-center gap-5">
         <div className="border-[1px] px-5 pb-5 rounded-lg">
-          <h1 className="text-2xl font-bold text-center mt-10">
+          <h1 className="text-2xl font-bold text-center mt-3">
             Select a Seat
           </h1>
+          <div className=" flex gap-6 items-center justify-center mt-3">
+            <div className=" flex flex-col gap-1 items-center">
+                <span className="w-6 h-6 bg-transparent border border-blue-500 inline-block rounded-md"></span>
+                <span className=" text-[12px] font-poppins font-bold">Available</span>
+            </div>
+            <div className=" flex flex-col gap-1 items-center">
+                <span className="w-6 h-6 bg-green-400 border inline-block rounded-md"></span>
+                <span className=" text-[12px] font-poppins font-bold">Processing</span>
+            </div>
+            <div className=" flex flex-col gap-1 items-center">
+                <span className="w-6 h-6 bg-red-500 border inline-block rounded-md"></span>
+                <span className=" text-[12px] font-poppins font-bold">Booked</span>
+            </div>
+          </div>
           <div className=" flex gap-10 mt-5">
             <div className=" flex flex-col gap-10">
               {/* Right Side Seats */}
               <SeatDisplay
-                schedule={schedule}
+                schedule={seatStatus}
                 handleSeatClick={handleSeatClick}
                 startWith="R"
               />
               {/* Left Side Seats */}
               <SeatDisplay
-                schedule={schedule}
+                schedule={seatStatus}
                 handleSeatClick={handleSeatClick}
                 startWith="L"
               />
             </div>
             <div className=" ">
               <SeatDisplay
-                schedule={schedule}
+                schedule={seatStatus}
                 handleSeatClick={handleSeatClick}
                 startWith={"B"}
               />
@@ -214,22 +288,23 @@ const Booking = () => {
                     <p className=" text-[12px] font-poppins text-slate-600 font-bold">
                       Distance
                     </p>
-                    <p className="text-[14px] font-bold">{route?.distanceKm} KM</p>
+                    <p className="text-[14px] font-bold">
+                      {route?.distanceKm} KM
+                    </p>
                   </div>
                   <div className=" flex flex-col">
                     <p className=" text-[12px] font-poppins text-slate-600 font-bold">
                       Duration
                     </p>
-                    <p className="text-[14px] font-bold">{route.estimatedTime}</p>
+                    <p className="text-[14px] font-bold">
+                      {route.estimatedTime}
+                    </p>
                   </div>
                 </div>
               ))
             }
           </div>
         </div>
-        {/* <div  className=" w-[400px] border rounded-lg">
-            skdf
-        </div> */}
       </div>
     </div>
   );
@@ -238,22 +313,25 @@ const Booking = () => {
 export default Booking;
 
 const Seat = ({ seat, handleSeatClick }) => (
-  <div
+  <button
     className={`flex items-center justify-center rounded-md w-14 h-14 border-2 ${
-      seat.isBooked
+      seat.isBooked || seat.seatAvailableState === "Booked"
         ? "bg-red-500 cursor-not-allowed text-white"
+        : seat.seatAvailableState === "Processing"
+        ? "bg-green-400 cursor-not-allowed"
         : " bg-transparent cursor-pointer text-black border-blue-400"
     }`}
+    disabled={seat.seatAvailableState !== "Available"}
     onClick={() => !seat.isBooked && handleSeatClick(seat)}
   >
     <p className="text-[14px] font-poppins font-bold">{seat.seatNumber}</p>
-  </div>
+  </button>
 );
 
 const SeatDisplay = ({ schedule, handleSeatClick, startWith }) => {
   // Group seats by their prefix (L1, L2, etc.)
   const groupedSeats =
-    schedule?.seatStatus
+    schedule
       ?.filter((seat) => seat.seatNumber.startsWith(startWith)) // Filter relevant seats
       ?.reduce((acc, seat) => {
         const prefix = seat.seatNumber.split("-")[0]; // Extract prefix (e.g., "L1")
@@ -270,21 +348,19 @@ const SeatDisplay = ({ schedule, handleSeatClick, startWith }) => {
     .map(([_, seats]) => seats);
 
   return (
-    <div style={{ display: "flex", flexDirection: "row", gap: "1rem" }}>
-      {seatColumns.map((column, columnIndex) => (
+    <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+      {seatColumns.map((column, index) => (
         <div
-          key={columnIndex}
-          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          key={index}
+          style={{ display: "flex", flexDirection: "column", gap: "10px" }}
         >
-          {column
-            .sort((a, b) => a.seatNumber.localeCompare(b.seatNumber)) // Ensure seats are sorted within each column
-            .map((seat) => (
-              <Seat
-                key={seat._id}
-                seat={seat}
-                handleSeatClick={handleSeatClick}
-              />
-            ))}
+          {column.map((seat) => (
+            <Seat
+              key={seat.seatNumber}
+              seat={seat}
+              handleSeatClick={handleSeatClick}
+            />
+          ))}
         </div>
       ))}
     </div>
