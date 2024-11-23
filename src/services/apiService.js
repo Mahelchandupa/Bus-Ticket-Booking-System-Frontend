@@ -27,3 +27,16 @@ export const fetchSchedulesByParams = async (params) => {
     }
   }
 };
+
+export const fetchScheduleById = async (scheduleId) => {
+  try {
+    const response = await bus_ticket_booking_api.get(`/schedules/${scheduleId}`);
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    } else {
+      throw { message: "An unexpected error occurred" };
+    }
+  }
+}
