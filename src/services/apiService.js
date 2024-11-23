@@ -16,7 +16,7 @@ export const fetchAllCities = async () => {
 export const fetchSchedulesByParams = async (params) => {
   try {
     const response = await bus_ticket_booking_api.get(
-      `/schedules/search?from=${params.from}&to=${params.to}&date=${params.date}`
+      `/schedules?from=${params.from}&to=${params.to}&date=${params.date}`
     );
     return response.data;
   } catch (error) {
