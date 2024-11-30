@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { fetchSchedulesByParams } from "../services/apiService";
 import showToast from "../utils/toastNotifications";
 import busImg from "../assets/bus-img.jpg";
+import { userLogout } from "../store";
+import { useDispatch } from "react-redux";
 
 const SearchResult = () => {
   const location = useLocation();
@@ -14,6 +16,7 @@ const SearchResult = () => {
   const [schedules, setSchedules] = useState([]);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchSearchResult = async () => {
@@ -28,6 +31,7 @@ const SearchResult = () => {
         ) {
           showToast("error", "Token expired. Please log in again.");
           localStorage.removeItem("token");
+          dispatch(userLogout());
           setTimeout(() => {
             window.location.href = "/login";
           }, 3000);
@@ -47,7 +51,7 @@ const SearchResult = () => {
         {schedules.length > 0 ? (
           <div>
             <h1 className=" text-xl text-center my-6 font-bold text-blue-800">
-             Schedules Buses from {from} to {to} on {date}
+              Schedules Buses from {from} to {to} on {date}
             </h1>
             <div className=" flex flex-col gap-5">
               {schedules.map((schedule) => (
@@ -148,9 +152,7 @@ const SearchResult = () => {
                         </div>
                         <div className=" self-center text-right">
                           <button
-                            onClick={() =>
-                              navigate(`/schedule/${schedules.cheduleId}`)
-                            }
+                            onClick={() => navigate(`/booking/${schedule._id}`)}
                             className="bg-yellow-500 font-bold text-white px-4 py-2 rounded-md"
                           >
                             Book Seat

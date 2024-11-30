@@ -7,6 +7,8 @@ import { fetchAllCities } from "../services/apiService";
 import showToast from "../utils/toastNotifications";
 import SearchableDropDown from "../components/Form/SearchableDropDown";
 import { useNavigate } from "react-router-dom";
+import { userLogout } from "../store";
+import { useDispatch } from "react-redux";
 
 const Home = () => {
   const [cities, setCities] = useState([]);
@@ -15,6 +17,7 @@ const Home = () => {
   );
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -26,6 +29,7 @@ const Home = () => {
         if (response?.message === "Token expired" && response?.statusCode === 401) {
           showToast("error", "Token expired. Please log in again.");
           localStorage.removeItem("token");
+          dispatch(userLogout());
           setTimeout(() => {
             window.location.href = "/login";
           }, 3000);

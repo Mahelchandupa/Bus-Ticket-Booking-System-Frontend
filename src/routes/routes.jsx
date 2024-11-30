@@ -5,6 +5,7 @@ import Login from "../pages/auth/Login";
 import ProtectedRoute from "../helpers/ProtectedRoute";
 import Register from "../pages/auth/Register";
 import SearchResult from "../pages/SearchResult";
+import Booking from "../pages/Booking";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <SearchResult />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/booking/:scheduleId",
+        element: (
+          <ProtectedRoute>
+            <Booking />
           </ProtectedRoute>
         ),
       }
