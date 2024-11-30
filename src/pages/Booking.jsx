@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 import showToast from "../utils/toastNotifications";
 import { fetchScheduleById } from "../services/apiService";
 import busImg from "../assets/bus-img.jpg";
@@ -7,7 +7,7 @@ import ArrowImg from "../assets/arrow.png";
 import { useDispatch, useSelector } from "react-redux";
 import { userLogout } from "../store";
 import io from "socket.io-client";
-
+import PaymentGateWay from "../components/payment/PaymentGateWay";
 
 const Booking = () => {
   const socket = io("http://localhost:5000");
@@ -15,35 +15,39 @@ const Booking = () => {
   const [schedule, setSchedule] = useState({});
   const dispatch = useDispatch();
   const [seatStatus, setSeatStatus] = useState([]);
+  const [seatProcessing, setSeatProcessing] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+
+  const { openPaymentModal, setOpenPaymentModal } = useOutletContext();
 
   const { currentUser } = useSelector((state) => state.user);
 
-  useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const response = await fetchScheduleById(scheduleId);
-        console.log("response", response);
-        setSchedule(response.data);
-        setSeatStatus(response.data.seatStatus);
-      } catch (error) {
-        const { error: response } = error;
-        if (
-          response?.message === "Token expired" &&
-          response?.statusCode === 401
-        ) {
-          showToast("error", "Token expired. Please log in again.");
-          localStorage.removeItem("token");
-          dispatch(userLogout());
-          setTimeout(() => {
-            window.location.href = "/login";
-          }, 3000);
-          return;
-        } else {
-          showToast("error", response?.message);
-        }
+  const fetchSchedule = async () => {
+    try {
+      const response = await fetchScheduleById(scheduleId);
+      setSchedule(response.data);
+      setSeatStatus(response.data.seatStatus);
+    } catch (error) {
+      const { error: response } = error;
+      if (
+        response?.message === "Token expired" &&
+        response?.statusCode === 401
+      ) {
+        showToast("error", "Token expired. Please log in again.");
+        localStorage.removeItem("token");
+        dispatch(userLogout());
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 3000);
+        return;
+      } else {
+        showToast("error", response?.message);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchSchedule();
   }, [scheduleId]);
 
@@ -66,33 +70,49 @@ const Booking = () => {
     }
 
     // Notify backend to set seat state to Processing
-    socket.emit("seatProcessing", {
+    socket.emit("multipleSeatsProcessing", {
       scheduleId,
-      seatNumber: seat.seatNumber,
+      seats: [...seatProcessing, seat],
       userId: currentUser._id,
     });
 
-    alert(
+    setSeatProcessing((prevSeats) => [...prevSeats, seat]);
+    setTotalAmount((prevAmount) => prevAmount + schedule.fare);
+
+    showToast(
+      "info",
       `Seat ${seat.seatNumber} is reserved for you. Complete the payment in 10 minutes.`
     );
   };
 
   useEffect(() => {
-    // Listen for seat status updates
     socket.on("seatStatusUpdate", (update) => {
       console.log("update", update);
       if (update.scheduleId === scheduleId) {
-        setSeatStatus((prevStatus) =>
-          prevStatus.map((seat) =>
-            seat.seatNumber === update.seatNumber
-              ? { ...seat, seatAvailableState: update.state }
+        setSeatStatus((prevStatus) => {
+          // Create a map of updated seat statuses for quick lookup
+          const updatedSeatsMap = new Map(
+            update.seats.map((seat) => [seat.seatNumber, seat.state])
+          );
+
+          console.log("updatedSeatsMap", updatedSeatsMap);
+
+          // Update the seat statuses
+          return prevStatus.map((seat) =>
+            updatedSeatsMap.has(seat.seatNumber)
+              ? {
+                  ...seat,
+                  seatAvailableState: updatedSeatsMap.get(seat.seatNumber),
+                }
               : seat
-          )
-        );
+          );
+        });
       }
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("seatStatusUpdate");
+    };
   }, [scheduleId]);
 
   useEffect(() => {
@@ -112,10 +132,8 @@ const Booking = () => {
     return () => {
       socket.off("seatReset");
     };
-  }, [scheduleId]);
-
-  console.log("seatStatus", seatStatus);
-
+  }, [scheduleId, socket, setSeatStatus, seatStatus]);
+  
   return (
     <div className=" mt-[100px] mb-[100px]">
       <div className=" max-w-6xl mx-auto">
@@ -221,21 +239,25 @@ const Booking = () => {
       </div>
       <div className=" flex mt-5 justify-center gap-5">
         <div className="border-[1px] px-5 pb-5 rounded-lg">
-          <h1 className="text-2xl font-bold text-center mt-3">
-            Select a Seat
-          </h1>
+          <h1 className="text-2xl font-bold text-center mt-3">Select a Seat</h1>
           <div className=" flex gap-6 items-center justify-center mt-3">
             <div className=" flex flex-col gap-1 items-center">
-                <span className="w-6 h-6 bg-transparent border border-blue-500 inline-block rounded-md"></span>
-                <span className=" text-[12px] font-poppins font-bold">Available</span>
+              <span className="w-6 h-6 bg-transparent border border-blue-500 inline-block rounded-md"></span>
+              <span className=" text-[12px] font-poppins font-bold">
+                Available
+              </span>
             </div>
             <div className=" flex flex-col gap-1 items-center">
-                <span className="w-6 h-6 bg-green-400 border inline-block rounded-md"></span>
-                <span className=" text-[12px] font-poppins font-bold">Processing</span>
+              <span className="w-6 h-6 bg-green-400 border inline-block rounded-md"></span>
+              <span className=" text-[12px] font-poppins font-bold">
+                Processing
+              </span>
             </div>
             <div className=" flex flex-col gap-1 items-center">
-                <span className="w-6 h-6 bg-red-500 border inline-block rounded-md"></span>
-                <span className=" text-[12px] font-poppins font-bold">Booked</span>
+              <span className="w-6 h-6 bg-red-500 border inline-block rounded-md"></span>
+              <span className=" text-[12px] font-poppins font-bold">
+                Booked
+              </span>
             </div>
           </div>
           <div className=" flex gap-10 mt-5">
@@ -306,6 +328,36 @@ const Booking = () => {
           </div>
         </div>
       </div>
+
+      <button
+        disabled={seatProcessing.length === 0}
+        onClick={() => setOpenPaymentModal(true)}
+        className={`absolute left-1/2 transform -translate-x-1/2 ${
+          seatProcessing.length === 0
+            ? " cursor-not-allowed"
+            : " cursor-pointer"
+        } `}
+      >
+        <div className=" flex items-center justify-center w-[200px] h-[50px] bg-[#DD4124] text-white rounded-md mt-5">
+          <p className=" text-[14px] font-poppins font-bold">
+            Proceed to Payment
+          </p>
+        </div>
+      </button>
+
+      {openPaymentModal && (
+        <PaymentGateWay
+          setOpenPaymentModal={setOpenPaymentModal}
+          totalAmount={totalAmount}
+          scheduleId={scheduleId}
+          seatProcessing={seatProcessing}
+          setSeatProcessing={setSeatProcessing}
+          setTotalAmount={setTotalAmount}
+          setSeatStatus={setSeatStatus}
+          seatStatus={seatStatus}
+          setBookingSuccess={setBookingSuccess}
+        />
+      )}
     </div>
   );
 };

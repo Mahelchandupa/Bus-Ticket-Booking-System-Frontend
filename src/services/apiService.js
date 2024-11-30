@@ -40,3 +40,16 @@ export const fetchScheduleById = async (scheduleId) => {
     }
   }
 }
+
+export const processPayment = async (paymentData) => {
+  try {
+    const response = await bus_ticket_booking_api.post("/schedules/pay", paymentData);
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    } else {
+      throw { message: "An unexpected error occurred" };
+    }
+  }
+}
