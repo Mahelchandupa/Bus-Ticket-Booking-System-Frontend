@@ -33,6 +33,7 @@ const PaymentGateWay = ({
   });
 
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   // Input change handler
   const handleChange = (e) => {
@@ -70,6 +71,7 @@ const PaymentGateWay = ({
       };
 
       try {
+        setLoading(true);
         const response = await processPayment(paymentData);
         if (response) {
           showToast("success", response.message);
@@ -81,7 +83,6 @@ const PaymentGateWay = ({
           setSeatProcessing([]);
           setTotalAmount(0);
         }
-
         setOpenPaymentModal(false);
       } catch (error) {
         const { error: response } = error;
@@ -100,6 +101,7 @@ const PaymentGateWay = ({
           showToast("error", response?.message);
         }
       }
+      setLoading(false);
     }
   };
 
@@ -261,7 +263,10 @@ const PaymentGateWay = ({
         </div>
         <div>
           <button
-            className="block w-full max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-3 font-semibold"
+            disabled={seatProcessing.length === 0 || loading}
+            className={`block w-full ${
+              loading ? "cursor-not-allowed" : "cursor-pointer"
+            } max-w-xs mx-auto bg-indigo-500 hover:bg-indigo-700 focus:bg-indigo-700 text-white rounded-lg px-3 py-3 font-semibold`}
             onClick={handlePayNow}
           >
             <i className="mdi mdi-lock-outline mr-1"></i> PAY NOW
