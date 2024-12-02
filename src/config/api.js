@@ -1,5 +1,8 @@
 import axios from "axios";
 
+console.log(process.env.BUS_TICKET_BOOKING_API_PROD);
+console.log(process.env.NODE_ENV);
+
 const baseURL =
   process.env.NODE_ENV === "production"
     ? process.env.BUS_TICKET_BOOKING_API_PROD
