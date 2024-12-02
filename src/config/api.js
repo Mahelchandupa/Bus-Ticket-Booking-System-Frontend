@@ -3,10 +3,10 @@ import axios from "axios";
 console.log(process.env.BUS_TICKET_BOOKING_API_PROD);
 console.log(process.env.NODE_ENV);
 
-const baseURL =
-  process.env.NODE_ENV === "production"
-    ? process.env.BUS_TICKET_BOOKING_API_PROD
-    : process.env.BUS_TICKET_BOOKING_API_DEV;
+const baseURL = process.env.NODE_ENV === "production"
+  ? process.env.REACT_APP_BUS_TICKET_BOOKING_API_PROD
+  : process.env.REACT_APP_BUS_TICKET_BOOKING_API_DEV;
+
 
 const bus_ticket_booking_api = axios.create({
   baseURL,
