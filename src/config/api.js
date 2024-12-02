@@ -1,9 +1,12 @@
 import axios from "axios";
-import history from "../helpers/history";
-import showToast from "../utils/toastNotifications";
+
+const baseURL =
+  process.env.NODE_ENV === "production"
+    ? process.env.BUS_TICKET_BOOKING_API_PROD
+    : process.env.BUS_TICKET_BOOKING_API_DEV;
 
 const bus_ticket_booking_api = axios.create({
-  baseURL: process.env.BUS_TICKET_BOOKING_API || "http://localhost:5000/api/v1",
+  baseURL,
   headers: {
     "Content-type": "application/json",
   },
