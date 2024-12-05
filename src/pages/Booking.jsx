@@ -6,11 +6,10 @@ import busImg from "../assets/bus-img.jpg";
 import ArrowImg from "../assets/arrow.png";
 import { useDispatch, useSelector } from "react-redux";
 import { userLogout } from "../store";
-import io from "socket.io-client";
 import PaymentGateWay from "../components/payment/PaymentGateWay";
+import socket from "../helpers/ConnectWebSocket";
 
 const Booking = () => {
-  const socket = io("http://localhost:5000");
   const { scheduleId } = useParams();
   const [schedule, setSchedule] = useState({});
   const dispatch = useDispatch();
@@ -118,6 +117,7 @@ const Booking = () => {
   useEffect(() => {
     // Listen for seat reset from backend
     socket.on("seatReset", (update) => {
+      console.log("seatReset", update);
       if (update.scheduleId === scheduleId) {
         setSeatStatus((prevStatus) =>
           prevStatus.map((seat) =>
@@ -133,7 +133,7 @@ const Booking = () => {
       socket.off("seatReset");
     };
   }, [scheduleId, socket, setSeatStatus, seatStatus]);
-  
+
   return (
     <div className=" mt-[100px] mb-[100px]">
       <div className=" max-w-6xl mx-auto">

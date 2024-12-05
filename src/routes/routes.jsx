@@ -6,6 +6,7 @@ import ProtectedRoute from "../helpers/ProtectedRoute";
 import Register from "../pages/auth/Register";
 import SearchResult from "../pages/SearchResult";
 import Booking from "../pages/Booking";
+import Profile from "../pages/Profile";
 
 const router = createBrowserRouter([
   {
@@ -35,7 +36,15 @@ const router = createBrowserRouter([
             <Booking />
           </ProtectedRoute>
         ),
-      }
+      },
+      {
+        path: "/profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   {
