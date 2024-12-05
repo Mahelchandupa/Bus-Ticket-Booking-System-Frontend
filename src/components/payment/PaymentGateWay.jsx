@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ModelTemplate from "./ModalTemplate";
 import { FaCreditCard } from "react-icons/fa";
 import Cansel from "../../assets/cansel.svg";
@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { processPayment } from "../../services/apiService";
 import showToast from "../../utils/toastNotifications";
 import { userLogout } from "../../store";
-import { io } from "socket.io-client";
+import socket from "../../helpers/ConnectWebSocket";
 
 const PaymentGateWay = ({
   setOpenPaymentModal,
@@ -17,7 +17,6 @@ const PaymentGateWay = ({
   setTotalAmount,
   setBookingSuccess,
 }) => {
-  const socket = io("http://localhost:5000");
   const { currentUser } = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
@@ -122,10 +121,13 @@ const PaymentGateWay = ({
             <FaCreditCard className="text-3xl" />
           </div>
         </div>
-        <div className="mb-10">
+        <div className=" mb-3">
           <h1 className="text-center font-bold text-xl uppercase">
             Secure payment info
           </h1>
+        </div>
+        <div className="mb-6 text-center font-bold text-[15px]">
+          <h1>Payment Amount: LKR.{totalAmount}</h1>
         </div>
         <div className="mb-3 flex -mx-2">
           <div className="px-2">

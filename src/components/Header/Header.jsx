@@ -6,7 +6,7 @@ import { IoLogOut } from "react-icons/io5";
 import UserProfileAvatar from "../../assets/user-profile-avatar.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import { userLogout } from "../../store";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -43,10 +43,10 @@ const Header = () => {
           {dropDown && (
             <div className="absolute top-14 border-t-[4px] border-red-500 right-1 w-40 bg-white shadow-md rounded-lg">
               <ul className="p-2 pb-3">
-                <li className="flex items-center gap-4 hover:bg-gray-100 border-b-gray-200 border-b-[1px] p-2 hover:rounded-md cursor-pointer">
+                <Link to="/profile" className="flex items-center gap-4 hover:bg-gray-100 border-b-gray-200 border-b-[1px] p-2 hover:rounded-md cursor-pointer">
                   <FaUserCog className=" text-red-500 text-lg" />
                   Profile
-                </li>
+                </Link>
                 <li className="flex items-center gap-4 hover:bg-gray-100 p-2 border-b-gray-200 border-b-[1px] hover:rounded-md cursor-pointer">
                   <IoMdSettings className=" text-red-500 text-lg" />
                   Settings
