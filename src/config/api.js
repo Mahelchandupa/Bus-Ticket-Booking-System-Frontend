@@ -16,6 +16,7 @@ const bus_ticket_booking_api = axios.create({
 bus_ticket_booking_api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+    console.log("Setting Authorization Header:", token);
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
